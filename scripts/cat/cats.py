@@ -1314,7 +1314,7 @@ class Cat:
         # if we have relations, then make sure we only take the top 8
         if dead_relations:
             for i, rel in enumerate(dead_relations):
-                if i <= num_of_lives_to_give - 1:
+                if i >= num_of_lives_to_give - 1:
                     break
                 if rel.cat_to.status.is_leader:
                     life_giving_leader = rel.cat_to
