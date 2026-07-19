@@ -67,7 +67,7 @@
       "rank": [],
       "life_giving": [
         {
-          "text": "From the muck and mire the distorted shadows of long dead cats rise and loom. Red eyes pierce the haze and a choking hiss grates across the clearing, \"Kindly spirits' eyes have left you, so we come to grant your remaining lives. Do with them what you will,\" before the shadows are gone as quickly as they appeared.",
+          "text": "From the muck and mire the distorted shadows of long dead cats rise and loom. Red eyes pierce the haze and a choking hiss grates across the clearing, \"Kindly spirits' eyes have left you, so we come to grant your [life_remaining]. Do with [life_pl] what you will,\" before the shadows are gone as quickly as they appeared.",
           "virtue": []
         }
       ]

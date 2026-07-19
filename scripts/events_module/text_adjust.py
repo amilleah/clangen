@@ -8,6 +8,7 @@ import i18n
 import pygame
 
 import scripts.game_structure
+from scripts.config import get_config
 from scripts.cat.enums import CatRank, CatGroup
 from scripts.cat.pronouns import (
     determine_plural_pronouns,
@@ -641,6 +642,15 @@ def leader_ceremony_text_adjust(
             "[life_num]",
             i18n.t("general.lives", count=extra_lives),
         )
+        text = text.replace("[life_pl]", "it" if extra_lives == 1 else "them")
+        text = text.replace(
+            "[life_remaining]",
+            (
+                "only life"
+                if extra_lives == 1
+                else f"remaining {i18n.t('general.lives', count=extra_lives)}"
+            ),
+        )
 
     text = text.replace("c_n", game.clan.name)
 
@@ -745,6 +755,12 @@ def ceremony_text_adjust(
         )
 
     adjust_text = process_text(adjust_text, cat_dict)
+
+    if "[life_num]" in adjust_text:
+        adjust_text = adjust_text.replace(
+            "[life_num]",
+            i18n.t("general.lives", count=get_config("death_related.max_leader_lives")),
+        )
 
     return adjust_text, random_living_parent, random_dead_parent
 
