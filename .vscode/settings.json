@@ -10,7 +10,14 @@
             "url": "./schemas/patrol.schema.json",
             "fileMatch": [
                 "patrols/**/*.json",
-                "!patrols/explicit_patrol_art.json"
+                "!patrols/explicit_patrol_art.json",
+                "!patrols/prey.json"
+            ]
+        },
+        {
+            "url": "./schemas/prey.schema.json",
+            "fileMatch": [
+                "patrols/prey.json"
             ]
         },
         {

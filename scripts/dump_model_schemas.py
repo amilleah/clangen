@@ -17,6 +17,7 @@ from scripts.models.thought.thought_schema import ThoughtSchema
 from scripts.models.points_of_interest.points_of_interest_schema import (
     PointsOfInterestSchema,
 )
+from scripts.models.patrol.prey_schema import PreySchema
 from scripts.models.util import (
     create_generate_json_schema_with_externals,
     get_defs_from_pydantic_model,
@@ -86,6 +87,7 @@ def main():
         RelationshipPairEvent, "schemas/relationship_pair_event.schema.json"
     )
     dump_model_schema(PointsOfInterestSchema, "schemas/poi.schema.json")
+    dump_model_schema(PreySchema, "schemas/prey.schema.json")
 
 
 if __name__ == "__main__":

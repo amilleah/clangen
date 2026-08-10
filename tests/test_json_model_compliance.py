@@ -12,6 +12,7 @@ os.environ["SDL_AUDIODRIVER"] = "dummy"
 from scripts.models.patrol.patrol_schema import PatrolSchema
 from scripts.models.shortevent.short_event_schema import ShortEventSchema
 from scripts.models.thought.thought_schema import ThoughtSchema
+from scripts.models.patrol.prey_schema import PreySchema
 from scripts.models.points_of_interest.points_of_interest_schema import (
     PointsOfInterestSchema,
 )
@@ -38,7 +39,7 @@ def all_patrol_files():
     """
     EXCLUSIONS = [
         "explicit_patrol_art.json",
-        "prey_text_replacements.json",
+        "prey.json",
     ]
 
     yield from (
@@ -46,6 +47,13 @@ def all_patrol_files():
         for file in RESOURCES_DIR.glob("lang/*/patrols/**/*.json")
         if file.name not in EXCLUSIONS
     )
+
+
+def all_prey_files():
+    """
+    Iterator for Paths for all prey files
+    """
+    yield from RESOURCES_DIR.glob("lang/*/patrols/prey.json")
 
 
 def all_shortevent_files():
@@ -78,6 +86,16 @@ def test_thoughts(thought_file: Path):
 def test_patrols(patrol_file: Path):
     """Test that all patrol JSONs are correct according to the Pydantic models"""
     PatrolSchema.model_validate_json(patrol_file.read_text())
+
+
+@pytest.mark.parametrize(
+    "prey_file",
+    all_prey_files(),
+    ids=format_file_context_string,
+)
+def test_prey(prey_file: Path):
+    """Test that all prey JSONs are correct according to the Pydantic models"""
+    PreySchema.model_validate_json(prey_file.read_text())
 
 
 @pytest.mark.parametrize(

@@ -1,0 +1,106 @@
+{
+  "$defs": {
+    "BiomeNoExclusions": {
+      "enum": [
+        "mountainous",
+        "plains",
+        "forest",
+        "beach",
+        "wetlands",
+        "desert"
+      ],
+      "title": "BiomeNoExclusions",
+      "type": "string"
+    },
+    "PreyItem": {
+      "additionalProperties": false,
+      "properties": {
+        "biome": {
+          "description": "Biomes that prey can be found in.",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/BiomeNoExclusions"
+              },
+              {
+                "const": "any",
+                "type": "string"
+              }
+            ]
+          },
+          "title": "Biome",
+          "type": "array"
+        },
+        "singular": {
+          "description": "Name of one of the prey.",
+          "title": "Singular",
+          "type": "string"
+        },
+        "plural": {
+          "description": "Name of several of the prey.",
+          "title": "Plural",
+          "type": "string"
+        },
+        "size": {
+          "$ref": "#/$defs/PreySize",
+          "description": "Size of the prey."
+        }
+      },
+      "required": [
+        "biome",
+        "singular",
+        "plural",
+        "size"
+      ],
+      "title": "PreyItem",
+      "type": "object"
+    },
+    "PreySize": {
+      "enum": [
+        "small",
+        "medium",
+        "threat"
+      ],
+      "title": "PreySize",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "comment": {
+      "description": "Notes for writers.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Comment",
+      "type": "array"
+    },
+    "catalog": {
+      "additionalProperties": {
+        "additionalProperties": {
+          "$ref": "#/$defs/PreyItem"
+        },
+        "type": "object"
+      },
+      "description": "Prey animals keyed by the name used in prey tags.",
+      "title": "Catalog",
+      "type": "object"
+    },
+    "groups": {
+      "additionalProperties": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "description": "Prey tag names used to look up keys or groups.",
+      "title": "Groups",
+      "type": "object"
+    }
+  },
+  "required": [
+    "catalog"
+  ],
+  "title": "PreySchema",
+  "type": "object"
+}

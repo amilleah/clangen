@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 langs = {"snippet": None, "prey": None}
 
 SNIPPETS = None
-PREY_LISTS = None
+PREY_DATA = None
 
 
 def pronoun_repl(m, cat_pronouns_dict, raise_exception=False):
@@ -164,23 +164,122 @@ def process_text(text, cat_dict, raise_exception=False):
     return adjust_text
 
 
-def adjust_prey_abbr(patrol_text):
-    """
-    checks for prey abbreviations and returns adjusted text
-    """
-    global PREY_LISTS
-    if langs["prey"] != i18n.config.get("locale"):
+def _find_prey_name(name, catalog, groups):
+    """Find prey and dedupe on lookup"""
+    prey = {}
+    pending = [name]
+    seen = set()
+
+    while pending:
+        current = pending.pop()
+        if current in seen:
+            continue
+        seen.add(current)
+
+        if current in catalog:
+            prey.update(catalog[current])
+        elif current in groups:
+            pending.extend(groups[current])
+        else:
+            raise ValueError(f"Unrecognized prey: {current}")
+
+    return list(prey.values())
+
+
+def _build_prey_index(data):
+    """Build prey index"""
+    catalog = data["catalog"]
+    groups = data.get("groups", {})
+
+    collisions = set(catalog) & set(groups)
+    if collisions:
+        raise ValueError(
+            f"Prey name used as both catalog key and group: {', '.join(sorted(collisions))}"
+        )
+
+    index = {
+        name: _find_prey_name(name, catalog, groups)
+        for name in list(catalog) + list(groups)
+    }
+
+    for name in groups:
+        if not index[name]:
+            raise ValueError(f"Empty prey group: {name}")
+
+    names = "|".join(sorted((name.upper() for name in index), key=len, reverse=True))
+    sizes = "|".join(
+        sorted(
+            {entry["size"].upper() for pool in index.values() for entry in pool},
+            key=len,
+            reverse=True,
+        )
+    )
+    pattern = re.compile(rf"\b({names})(?:\.({sizes}))?/(SINGULAR|PLURAL)(?:#(\w+))?\b")
+
+    return index, pattern
+
+
+def _current_biome():
+    """Get current biome"""
+    if not game.clan:
+        return None
+    return (
+        game.clan.biome if not game.clan.override_biome else game.clan.override_biome
+    ).casefold()
+
+
+def _prey_repl(match, index, bindings):
+    """Prey replacement"""
+    name, size, number, bind = match.groups()
+
+    if bind is not None and bind in bindings:
+        chosen = bindings[bind]
+    else:
+        pool = index.get(name.lower(), [])
+        biome = _current_biome()
+
+        candidates = pool
+        if biome:
+            candidates = [
+                entry
+                for entry in candidates
+                if "any" in entry["biome"] or biome in entry["biome"]
+            ]
+        if size:
+            by_size = [entry for entry in candidates if entry["size"] == size.lower()]
+            candidates = by_size if by_size else candidates
+
+        if not candidates and size:
+            candidates = [entry for entry in pool if entry["size"] == size.lower()]
+        if not candidates:
+            candidates = pool
+        if not candidates:
+            logger.warning("No prey found for tag: %s", match.group(0))
+            return "MISSING_PREY"
+
+        chosen = choice(candidates)
+        if bind is not None:
+            bindings[bind] = chosen
+
+    return chosen["plural"] if number == "PLURAL" else chosen["singular"]
+
+
+def _get_prey_data():
+    """Look up prey data and build index"""
+    global PREY_DATA
+    if PREY_DATA is None or langs["prey"] != i18n.config.get("locale"):
         langs["prey"] = i18n.config.get("locale")
-        PREY_LISTS = load_lang_resource("patrols/prey_text_replacements.json")
+        PREY_DATA = _build_prey_index(load_lang_resource("patrols/prey.json"))
 
-    for abbr in PREY_LISTS["abbreviations"]:
-        if abbr in patrol_text:
-            chosen_list = PREY_LISTS["abbreviations"].get(abbr)
-            chosen_list = PREY_LISTS[chosen_list]
-            prey = choice(chosen_list)
-            patrol_text = patrol_text.replace(abbr, prey)
+    return PREY_DATA
 
-    return patrol_text
+
+def adjust_prey_abbr(patrol_text):
+    """Check for prey tags and return adjusted text"""
+    index, pattern = _get_prey_data()
+    bindings = {}
+
+    return pattern.sub(lambda match: _prey_repl(match, index, bindings), patrol_text)
 
 
 def get_special_snippet_list(

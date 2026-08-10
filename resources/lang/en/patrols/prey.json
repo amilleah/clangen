@@ -1,0 +1,22 @@
+{
+  "comment":[
+    "This file is used to generate prey tags used in patrols.",
+    "The catalog is a dictionary of prey animals, keyed by the name used in prey tags.",
+    "The groups are used to define groups of prey animals, which can be used in patrols.",
+    "Add singular and plural forms of the prey, the biomes they can be found in, and the size of the prey.",
+    "New classes of prey (e.g., rodent) can be added to the catalog or added to groups (e.g., ground)."
+  ],
+  "catalog": {
+    "rodent": {
+      "mouse": {
+        "biome": ["any"],
+        "singular": "mouse",
+        "plural": "mice",
+        "size": "small"
+      }
+    }
+  },
+  "groups": {
+    "ground": ["rodent"]
+  }
+}
